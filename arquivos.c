@@ -103,7 +103,14 @@ void Cmd_close (char *tr[])
     int df;
     int fClose = 0;
     
-    if (tr[0]==NULL || (df=atoi(tr[0]))<0) { /*no hay parametro*/
+    if (tr[0] == NULL) {
+        ImprimirListaCompleta(openFiles, 0, ImprimirFichero);
+        return;
+    }
+
+    df = atoi(tr[0]);
+
+    if (df < 0 || (df == 0 && tr[0][0] != '0')) { 
         ImprimirListaCompleta(openFiles, 0, ImprimirFichero);
         return;
     }
