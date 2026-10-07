@@ -147,6 +147,56 @@ void Cmd_listopen(char *tr[])
     ImprimirListaCompleta(openFiles, 0, ImprimirFichero);
 }
 
+char *DescriptorFileName(int df)
+{
+
+    int pos = BuscarElemento(openFiles,&df,CompFE);
+
+    if (pos==-1){
+        perror("Descriptor no encontrado");
+                return NULL;
+    }
+    return openFiles[pos] != NULL ? ((FileEntry *)openFiles[pos])->name : NULL;
+}
+
+void Cmd_dup (char * tr[])
+{ 
+    int df, duplicado;
+    char aux[MAXNAME],*p;
+    
+    if (tr[0]==NULL || (df=atoi(tr[0]))<0) { /*no hay parametro*/
+        ImprimirListaCompleta(openFiles, 0, ImprimirFichero);        /*o el descriptor es menor que 0*/
+        return;
+    }
+    
+ 
+    p=DescriptorFileName(df);
+
+    if (p==NULL) {
+        perror("Descriptor no encontrado en la tabla de ficheros abiertos\n");
+        return;
+    }
+
+    duplicado=dup(df);
+    if (duplicado==-1) {
+        perror("Imposible duplicar descriptor");
+        return;
+    }
+
+    sprintf (aux,"dup %d (%s)",df, p);
+
+    FileEntry *f = malloc(sizeof(FileEntry));
+    f->df = duplicado;
+    f->mode = fcntl(duplicado,F_GETFL);
+    strncpy(f->name, aux, MAXNAME-1);
+    f->name[MAXNAME-1] = '\0';
+    if (AniadirElemento(openFiles, f)==-1) {
+        perror("Imposible anadir entrada a la tabla ficheros abiertos");
+        free(f);
+    } else
+        printf("Anadida entrada a la tabla ficheros abiertos. %s abierto con descriptor %d\n", tr[0], df);
+}
+
 void Cmd_lseek (char * tr[])
 {
     int df;
