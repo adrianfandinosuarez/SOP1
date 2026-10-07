@@ -4,6 +4,8 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "listasimple.h"
 
 static LISTASIMPLE openFiles;
@@ -301,5 +303,41 @@ void Cmd_writestr (char * tr[])
         perror(err_msg);
     } else {
         printf("Escritos %ld bytes en el descriptor %d\n", (long)writen, df);
+    }
+}
+
+void Cmd_makefile (char *tr[]){
+
+    int df;
+    char *filename;
+
+    if (tr[0] == NULL) {
+        printf("Falta el nombre del fichero a crear.\n");
+        return;
+    }
+
+    filename = tr[0];
+
+    df = open(filename, O_CREAT | O_EXCL | O_WRONLY, 0644);
+    if (df == -1) {
+        perror("Imposible crear fichero");
+        return;
+    }
+
+    printf("Fichero %s creado con descriptor %d\n", filename, df);
+    close(df);
+}
+
+void Cmd_makedir (char * tr[])
+{
+    if (tr[0] == NULL) {
+        printf("Falta el nombre del directorio\n");
+        return;
+    }
+
+    if (mkdir(tr[0], 0777) == -1) {
+        perror("Imposible crear directorio");
+    } else {
+        printf("Directorio %s creado con exito\n", tr[0]);
     }
 }

@@ -17,5 +17,7 @@ void Cmd_dup(char * tr[]);
 void Cmd_lseek(char * tr[]);
 void Cmd_readstr(char * tr[]);
 void Cmd_writestr(char * tr[]);
+void Cmd_makefile(char * tr[]);
+void Cmd_makedir(char * tr[]);
 
 #endif

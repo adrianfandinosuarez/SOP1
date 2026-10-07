@@ -46,6 +46,8 @@ static struct COMANDO C[]={
    {"lseek", Cmd_lseek},
    {"readstr", Cmd_readstr},
    {"writestr", Cmd_writestr},
+   {"makefile", Cmd_makefile},
+   {"makedir", Cmd_makedir},
    {NULL,NULL},
   };
 
