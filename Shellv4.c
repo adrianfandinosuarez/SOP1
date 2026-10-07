@@ -79,6 +79,8 @@ int  main(int argc, char *argv[], char *ent[])
 {
    char entrada[MAXENTRADA];
 
+   InitializeOpenFiles();
+
    if (argv[1]==NULL)
         printf ("Ejecutando con path vacio: %s -p para importar el path\n",argv[0]);
    else if (!strcmp(argv[1],"-p"))
