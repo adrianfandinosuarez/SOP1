@@ -42,6 +42,7 @@ static struct COMANDO C[]={
    {"open", Cmd_open},
    {"close", Cmd_close},
    {"listopen", Cmd_listopen},
+   {"lseek", Cmd_lseek},
    {NULL,NULL},
   };
 
