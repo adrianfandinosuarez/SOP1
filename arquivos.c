@@ -194,7 +194,7 @@ void Cmd_dup (char * tr[])
         perror("Imposible anadir entrada a la tabla ficheros abiertos");
         free(f);
     } else
-        printf("Anadida entrada a la tabla ficheros abiertos. %s abierto con descriptor %d\n", tr[0], df);
+        printf("Anadida entrada a la tabla ficheros abiertos. %s abierto con descriptor %d\n", df, duplicado);
 }
 
 void Cmd_lseek (char * tr[])
