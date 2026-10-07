@@ -89,10 +89,7 @@ int  main(int argc, char *argv[], char *ent[])
    while (1){
       printf ("-> ");
 
-      if (fgets(entrada, MAXENTRADA, stdin) == NULL) {
-          printf("\nEOF detectado o entrada estándar cerrada. Saliendo del shell...\n");
-          break;
-      }
+      if (fgets(entrada, MAXENTRADA, stdin) == NULL) break;
 
       ProcesarEntrada(entrada);
    }
