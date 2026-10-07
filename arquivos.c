@@ -37,12 +37,17 @@ void Cmd_trychdir(char *args[])
 void ImprimirFichero(void *ptr) {
     FileEntry *f = (FileEntry *)ptr;
     int m = f->mode;
-    
-    printf("descriptor: %d -> %s %s%s%s%s%s\n", 
+
+    long offset = lseek(f->df, 0, SEEK_CUR);
+    char str_offset[32] = "  "; 
+
+    if (offset != -1) sprintf(str_offset, "%ld", offset);
+
+    printf("descriptor: %d, offset: (%s)-> %s %s%s%s%s%s\n", 
         f->df, 
+        str_offset,
         f->name,
         (m & O_ACCMODE) == O_RDWR ? "O_RDWR" : ((m & O_ACCMODE) == O_WRONLY ? "O_WRONLY" : "O_RDONLY"),
-
         (m & O_CREAT)  ? " O_CREAT" : "",
         (m & O_EXCL)   ? " O_EXCL" : "",
         (m & O_APPEND) ? " O_APPEND" : "",
@@ -140,4 +145,44 @@ void Cmd_close (char *tr[])
 void Cmd_listopen(char *tr[])
 {
     ImprimirListaCompleta(openFiles, 0, ImprimirFichero);
+}
+
+void Cmd_lseek (char * tr[])
+{
+    int df;
+    long pos, res;
+    int ref = SEEK_SET;
+
+    if (tr[0] == NULL || tr[1] == NULL) {
+        printf("Parametros incorrectos\n");
+        return;
+    }
+
+    df = atoi(tr[0]);
+    if (df < 0 || (df == 0 && tr[0][0] != '0')) {
+        printf("Parametros incorrectos\n");
+        return;
+    }
+
+    pos = atol(tr[1]);
+
+    if (tr[2] != NULL) {
+        if (!strcmp(tr[2], "SEEK_SET")) {
+            ref = SEEK_SET;
+        } else if (!strcmp(tr[2], "SEEK_CUR")) {
+            ref = SEEK_CUR;
+        } else if (!strcmp(tr[2], "SEEK_END")) {
+            ref = SEEK_END;
+        } 
+    }
+
+    res = lseek(df, pos, ref);
+    
+    if (res == -1) {
+        char err_msg[256];
+        sprintf(err_msg, "Error al intentar posicionar el descriptor %d en el offset %ld", df, pos);
+        perror(err_msg);
+    } else {
+        printf("Descriptor %d posicionado en %ld\n", df, res);
+    }
 }

@@ -13,6 +13,7 @@ void InitializeOpenFiles();
 void Cmd_open (char * tr[]);
 void Cmd_close (char * tr[]);
 void Cmd_listopen(char * tr[]);
+void Cmd_lseek(char * tr[]);
 
 
 #endif
