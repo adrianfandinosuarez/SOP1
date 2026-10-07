@@ -194,7 +194,7 @@ void Cmd_dup (char * tr[])
         perror("Imposible anadir entrada a la tabla ficheros abiertos");
         free(f);
     } else
-        printf("Anadida entrada a la tabla ficheros abiertos. %d abierto con descriptor %d\n", df, duplicado);
+        printf("Anadida entrada a la tabla ficheros abiertos. Descriptor %d abierto con descriptor %d\n", df, duplicado);
 }
 
 void Cmd_lseek (char * tr[])
@@ -234,5 +234,72 @@ void Cmd_lseek (char * tr[])
         perror(err_msg);
     } else {
         printf("Descriptor %d posicionado en %ld\n", df, res);
+    }
+}
+
+void Cmd_readstr(char *tr[])    
+{
+    int df;
+    size_t cont;
+    ssize_t nbytes;
+    char *buffer;
+
+    if (tr[0] == NULL || tr[1] == NULL) {
+        printf("Faltan parametros\n");
+        return;
+    }
+
+    df = atoi(tr[0]);
+    cont = (size_t) atoi(tr[1]);
+
+    if (df < 0 || (int)cont <= 0) {
+        printf("Descriptor o contador no valido\n");
+        return;
+    }
+
+    buffer = malloc(cont + 1);
+    if (buffer == NULL) {
+        perror("Imposible reservar memoria para readstr");
+        return;
+    }
+
+    nbytes = read(df, buffer, cont);
+    if (nbytes == -1) {
+        perror("Imposible leer del descriptor");
+        free(buffer);
+        return;
+    }
+    //Asegurar el fin de cadena y mostrar por pantalla
+    buffer[nbytes] = '\0';
+
+    printf("Leídos %ld bytes: %s\n", (long)nbytes, buffer);
+    
+    free(buffer);
+}
+
+void Cmd_writestr (char * tr[])
+{
+    int df;
+    ssize_t writen;
+
+    if (tr[0] == NULL || tr[1] == NULL) {
+        printf("Faltan parametros\n");
+        return;
+    }
+
+    df = atoi(tr[0]);
+    if (df < 0 ) {
+        printf("Parametros incorrectos\n");
+        return;
+    }
+
+    writen = write(df, tr[1], strlen(tr[1]));
+
+    if (writen == -1) {
+        char err_msg[256];
+        sprintf(err_msg, "Error intentar escribir %ld bytes en el descriptor %d", (long)strlen(tr[1]), df);
+        perror(err_msg);
+    } else {
+        printf("Escritos %ld bytes en el descriptor %d\n", (long)writen, df);
     }
 }

@@ -15,6 +15,7 @@ void Cmd_close (char * tr[]);
 void Cmd_listopen(char * tr[]);
 void Cmd_dup(char * tr[]);
 void Cmd_lseek(char * tr[]);
-
+void Cmd_readstr(char * tr[]);
+void Cmd_writestr(char * tr[]);
 
 #endif

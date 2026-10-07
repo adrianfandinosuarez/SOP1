@@ -44,6 +44,8 @@ static struct COMANDO C[]={
    {"listopen", Cmd_listopen},
    {"dup", Cmd_dup},
    {"lseek", Cmd_lseek},
+   {"readstr", Cmd_readstr},
+   {"writestr", Cmd_writestr},
    {NULL,NULL},
   };
 
