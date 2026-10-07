@@ -39,6 +39,18 @@ void ImprimirFichero(void *ptr) {
     printf("descriptor: %d -> %s\n", f->df, f->name);
 }
 
+void InitializeOpenFiles() {
+    char *open_files[] = {"stdin", "stdout", "stderr"};
+    for (int i = 0; i < 3; i++) {
+        FileEntry *f = malloc(sizeof(FileEntry));
+        f->df = i;
+        f->mode = 0;
+        strcpy(f->name, open_files[i]);
+        f->name[MAXNAME-1] = '\0';
+        AniadirElemento(openFiles, f);
+    }
+}
+
 void Cmd_open (char * tr[])
 {
     int i,df, mode=0;
