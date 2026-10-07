@@ -36,15 +36,26 @@ void Cmd_trychdir(char *args[])
 
 void ImprimirFichero(void *ptr) {
     FileEntry *f = (FileEntry *)ptr;
-    printf("descriptor: %d -> %s\n", f->df, f->name);
+    int m = f->mode;
+    
+    printf("descriptor: %d -> %s %s%s%s%s%s\n", 
+        f->df, 
+        f->name,
+        (m & O_ACCMODE) == O_RDWR ? "O_RDWR" : ((m & O_ACCMODE) == O_WRONLY ? "O_WRONLY" : "O_RDONLY"),
+
+        (m & O_CREAT)  ? " O_CREAT" : "",
+        (m & O_EXCL)   ? " O_EXCL" : "",
+        (m & O_APPEND) ? " O_APPEND" : "",
+        (m & O_TRUNC)  ? " O_TRUNC" : ""
+    );
 }
 
 void InitializeOpenFiles() {
-    char *open_files[] = {"stdin", "stdout", "stderr"};
+    char *open_files[] = {"entrada estandar", "salida estandar", "error estandar"};
     for (int i = 0; i < 3; i++) {
         FileEntry *f = malloc(sizeof(FileEntry));
         f->df = i;
-        f->mode = 0;
+        f->mode = O_RDWR;
         strcpy(f->name, open_files[i]);
         f->name[MAXNAME-1] = '\0';
         AniadirElemento(openFiles, f);
