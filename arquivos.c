@@ -1,4 +1,3 @@
-#include "arquivos.h"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -6,6 +5,11 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <time.h>
+#include <pwd.h>
+#include <grp.h>
+
+#include "arquivos.h"
 #include "listasimple.h"
 
 static LISTASIMPLE openFiles;
@@ -400,3 +404,81 @@ char * ConvierteModo2 (mode_t m)
     return permisos;
 }
 
+void ListFile (char *name, int llong, int link, int acc) {
+    struct stat s; // Tipo proporcionado por sys/stat.h para almacenar información sobre el archivo
+
+    // Buffers
+    char time[64];
+    char link_target[MAXNAME];
+
+    if (lstat(name, &s) == -1) { // lstat para obtener información sobre el archivo, incluyendo enlaces simbólicos
+        char err_msg[256];
+        sprintf(err_msg, "Error al acceder a %s", name);
+        perror(err_msg);
+        return;
+    }
+
+    if (!llong) { // Si no se requiere formato long, solo imprimimos el tamaño y el nombre del archivo
+        printf("%9ld %s\n", (long)s.st_size, name);
+        return;
+    }
+
+    time_t t = acc ? s.st_atime : s.st_mtime; // si acc, usamos st_atime (último acceso), sino st_mtime (última modificación)
+    struct tm *tm_info = localtime(&t);
+    strftime(time, sizeof(time), "%Y/%m/%d-%H:%M", tm_info); // Formateo de fecha y hora
+
+    struct passwd *pw = getpwuid(s.st_uid); // Obtener información del usuario propietario del archivo
+    struct group *gr = getgrgid(s.st_gid); // Obtener información del grupo propietario del archivo
+    char user[32], group[32];
+
+    // Guardamos el nombre del usuario y del grupo, o el UID/GID si no se encuentra
+    if (pw) strcpy(user, pw->pw_name); else sprintf(user, "%d", s.st_uid);
+    if (gr) strcpy(group, gr->gr_name); else sprintf(group, "%d", s.st_gid);
+
+    link_target[0] = '\0';
+    if (link && S_ISLNK(s.st_mode)) { // Si es un enlace simbólico y se requiere mostrar el destino del enlace
+        ssize_t len = readlink(name, link_target, sizeof(link_target) - 1); // Lee el destino del enlace simbólico
+        if (len != -1) {
+            link_target[len] = '\0';
+        }
+    }
+
+    if (link_target[0] != '\0') { // Si hay un destino de enlace simbólico, lo mostramos junto con la información del archivo
+        printf("%s %3lu %8s %8s %s %9ld %s -> %s\n", 
+            time, (unsigned long)s.st_nlink, user, group, 
+            ConvierteModo2(s.st_mode), (long)s.st_size, name, link_target);
+    } else { // Sino, solo mostramos la información del archivo
+        printf("%s %3lu %8s %8s %s %9ld %s\n", 
+            time, (unsigned long)s.st_nlink, user, group, 
+            ConvierteModo2(s.st_mode), (long)s.st_size, name);
+    }
+}
+
+void Cmd_listfile(char *tr[]) {
+    int llong = 0, link = 0, acc = 0;
+    int i = 0;
+
+    // Extraer flags de los parámetros, si los hay
+    while (tr[i] != NULL && tr[i][0] == '-') {
+        if (!strcmp(tr[i], "-long")) llong = 1;
+        else if (!strcmp(tr[i], "-link")) link = 1;
+        else if (!strcmp(tr[i], "-acc")) acc = 1;
+        else {
+            // Si empieza por '-' pero no es un flag conocido, asumimos que es un nombre de archivo extraño
+            break;
+        }
+        i++;
+    }
+
+    // Si no hay parámetros (o solo hay flags), operamos en directorio actual
+    if (tr[i] == NULL) {
+        ListFile(".", llong, link, acc);
+        return;
+    }
+
+    // Si hay parámetros, listamos cada uno de ellos
+    while (tr[i] != NULL) {
+        ListFile(tr[i], llong, link, acc);
+        i++;
+    }
+}

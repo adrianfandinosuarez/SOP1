@@ -20,4 +20,5 @@ void Cmd_writestr(char * tr[]);
 void Cmd_makefile(char * tr[]);
 void Cmd_makedir(char * tr[]);
 void Cmd_delete(char * tr[]);
+void Cmd_listfile(char * tr[]);
 #endif
