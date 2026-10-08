@@ -509,7 +509,6 @@ void ListDir(char *name, int reca, int recb, int hid, int llong, int link, int a
     printf("************ %s ************\n", name);
     if ((d = opendir(name)) != NULL) { // Abrimos el directorio para listar su contenido
         while ((ent = readdir(d)) != NULL) { // Leemos cada entrada del directorio
-            if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, "..")) continue; // Ignoramos las entradas "." y ".."
             if (!hid && ent->d_name[0] == '.') continue; // Ignoramos archivos ocultos si no se requiere mostrarlos
 
             snprintf(path, sizeof(path), "%s/%s", name, ent->d_name); // Construimos la ruta completa del archivo/directorio
