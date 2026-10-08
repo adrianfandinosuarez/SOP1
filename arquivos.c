@@ -8,6 +8,7 @@
 #include <time.h>
 #include <pwd.h>
 #include <grp.h>
+#include <dirent.h>
 
 #include "arquivos.h"
 #include "listasimple.h"
@@ -479,6 +480,96 @@ void Cmd_listfile(char *tr[]) {
     // Si hay parámetros, listamos cada uno de ellos
     while (tr[i] != NULL) {
         ListFile(tr[i], llong, link, acc);
+        i++;
+    }
+}
+
+void ListDir(char *name, int reca, int recb, int hid, int llong, int link, int acc) {
+    DIR *d;
+    struct dirent *ent;
+    struct stat s;
+    char path[MAXNAME];
+
+    if (recb) {
+        if ((d = opendir(name)) != NULL) { // Abrimos el directorio
+            while ((ent = readdir(d)) != NULL) { // Leemos cada entrada del directorio
+                if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, "..")) continue; // Ignoramos las entradas "." y ".."
+                if (!hid && ent->d_name[0] == '.') continue; // Ignoramos archivos ocultos si no se requiere mostrarlos
+
+                snprintf(path, sizeof(path), "%s/%s", name, ent->d_name); // Construimos la ruta completa del archivo/directorio
+                
+                if (lstat(path, &s) != -1 && S_ISDIR(s.st_mode)) { // Si es un directorio, llamamos recursivamente a ListDir
+                    ListDir(path, reca, recb, hid, llong, link, acc); // Llamada recursiva para listar el contenido del subdirectorio
+                }
+            }
+            closedir(d);
+        }
+    }
+
+    printf("************ %s ************\n", name);
+    if ((d = opendir(name)) != NULL) { // Abrimos el directorio para listar su contenido
+        while ((ent = readdir(d)) != NULL) { // Leemos cada entrada del directorio
+            if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, "..")) continue; // Ignoramos las entradas "." y ".."
+            if (!hid && ent->d_name[0] == '.') continue; // Ignoramos archivos ocultos si no se requiere mostrarlos
+
+            snprintf(path, sizeof(path), "%s/%s", name, ent->d_name); // Construimos la ruta completa del archivo/directorio
+
+            ListFile(path, llong, link, acc); // Llamamos a ListFile para mostrar la información del archivo/directorio
+        }
+        closedir(d);
+    } else {
+        perror("Imposible abrir directorio");
+    }
+
+    if (reca) { // Para recursividad después de listar el directorio, abrimos el directorio para procesar sus subdirectorios
+        if ((d = opendir(name)) != NULL) { // Abrimos el directorio
+            while ((ent = readdir(d)) != NULL) { // Repetimos el proceso de lectura de entradas del directorio
+                if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, "..")) continue;
+                if (!hid && ent->d_name[0] == '.') continue;
+
+                snprintf(path, sizeof(path), "%s/%s", name, ent->d_name);
+                
+                if (lstat(path, &s) != -1 && S_ISDIR(s.st_mode)) {
+                    ListDir(path, reca, recb, hid, llong, link, acc);
+                }
+            }
+            closedir(d);
+        }
+    }
+}
+
+void Cmd_list(char *tr[]) {
+    // Inicializamos las variables de flags y el índice
+    int reca = 0, recb = 0, hid = 0, llong = 0, link = 0, acc = 0;
+    int i = 0;
+    struct stat s;
+
+    while (tr[i] != NULL && tr[i][0] == '-') { // Procesamos los flags
+        if (!strcmp(tr[i], "-reca")) reca = 1;
+        else if (!strcmp(tr[i], "-recb")) recb = 1;
+        else if (!strcmp(tr[i], "-hid")) hid = 1;
+        else if (!strcmp(tr[i], "-long")) llong = 1;
+        else if (!strcmp(tr[i], "-link")) link = 1;
+        else if (!strcmp(tr[i], "-acc")) acc = 1;
+        else break;
+        i++;
+    }
+
+    if (tr[i] == NULL) { // Si no hay parámetros, listamos el directorio actual
+        ListDir(".", reca, recb, hid, llong, link, acc);
+        return;
+    }
+
+    while (tr[i] != NULL) { // Listamos cada parámetro proporcionado
+        if (lstat(tr[i], &s) == -1) {
+            perror(tr[i]);
+        } else {
+            if (S_ISDIR(s.st_mode)) { // Si es un directorio, llamamos a ListDir para listar su contenido
+                ListDir(tr[i], reca, recb, hid, llong, link, acc);
+            } else {
+                ListFile(tr[i], llong, link, acc);
+            }
+        }
         i++;
     }
 }

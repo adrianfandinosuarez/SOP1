@@ -103,6 +103,13 @@ void Cmd_help(char *tr[]) {
         printf("\t\t\t-long: listado largo\n");
         printf("\t\t\t-acc:  tiempo de acceso\n");
         printf("\t\t\t-link: si es enlace simbolico, muestra a donde apunta\n");
+    } else if (!strcmp(tr[0], "list")) {
+        printf("list [-reca] [-recb] [-hid][-long][-link][-acc] name1 name2...\n");
+        printf("\t\t\tIgual que listfile, pero si el nombre es un directorio,\n");
+        printf("\t\t\tlista sus contenidos en lugar del propio directorio.\n");
+        printf("\t\t\t-hid:  incluye ficheros ocultos\n");
+        printf("\t\t\t-reca: recursividad DESPUES de listar el directorio\n");
+        printf("\t\t\t-recb: recursividad ANTES de listar el directorio\n");
     } else {
         printf("Comando no encontrado. Teclee 'help' para ver la lista de comandos disponibles.\n");
     }

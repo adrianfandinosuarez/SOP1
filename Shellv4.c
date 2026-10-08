@@ -50,6 +50,7 @@ static struct COMANDO C[]={
    {"makedir", Cmd_makedir},
    {"delete", Cmd_delete},
    {"listfile", Cmd_listfile},
+   {"list", Cmd_list},
    {NULL,NULL},
   };
 
